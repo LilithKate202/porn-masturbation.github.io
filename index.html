@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>交互式图文榨精页面</title>
+    <style>
+    	#fullscreen-background {
+    display: block !important;
+}
+
+    
+    	/* 滚动字幕的容器样式 */
+.scrolling-text {
+    width: 100%; /* 容器宽度 */
+    overflow: hidden; /* 隐藏超出部分 */
+    position: fixed; /* 固定在页面顶部 */
+    top: 0; /* 距离页面顶部的距离 */
+    background-color: rgba(0, 0, 0, 0.7); /* 背景颜色（半透明） */
+    color: white; /* 文字颜色 */
+    padding: 10px 0; /* 上下内边距 */
+    text-align: center; /* 文字居中 */
+    z-index: 1000; /* 确保在页面最上层 */
+}
+
+/* 滚动内容的样式 */
+.text-content {
+    display: inline-block; /* 行内块元素 */
+    white-space: nowrap; /* 防止换行 */
+    padding: 0 20px; /* 左右内边距 */
+    font-size: 18px; /* 字体大小 */
+    animation: scrollText 15s linear infinite; /* 应用滚动动画 */
+}
+
+/* 定义滚动动画 */
+@keyframes scrollText {
+    0% {
+        transform: translateX(100%); /* 从容器右侧开始 */
+    }
+    100% {
+        transform: translateX(-100%); /* 滚动到容器左侧 */
+    }
+}
+
+    	
+    
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
+            margin: 0;
+            background-color: #ffe6f7;
+        }
+ 
+        .question-container {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+ 
+        .options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+ 
+        .option-btn {
+            padding: 10px 20px;
+            font-size: 32px;
+            cursor: pointer;
+            background-color: #ff66cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+           
+        }
+ 
+        .option-btn:hover {
+            background-color: #ff99dd;
+        }
+ 
+        .result-container {
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+ 
+        .text-group {
+        	font-size:30px;
+            color: rgba(0, 0, 0, 1);/* 字体颜色 */
+            margin: 2px 0;
+            padding: 5px;
+            border: 1px solid #ff00aa;
+            border-radius: 2px;
+            background-color: white;
+        }
+ 
+        .timer {
+            font-size: 20px;
+            margin-top: 10px;
+            color: #ff0000;
+        }
+ 
+        .restart-btn {
+            padding: 10px 20px;
+            font-size: 32px;
+            cursor: pointer;
+            margin-top: 10px;
+            background-color: #ff66cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+ 
+        .restart-btn:hover {
+            background-color: #ff99dd;
+        }
+
+        .flex-container {
+            display: flex; /* 使用弹性布局 */
+            justify-content: space-around; /* 图片之间均匀分布 */
+            align-items: center; /* 垂直居中 */
+            padding: 10px; /* 添加内边距 */
+            border: 2px solid #ccc;
+        }
+        
+        .flex-container img {
+            max-width: 80%; /* 图片最大宽度不超过容器 */
+            height: auto; /* 自动调整高度以保持宽高比例 */
+        }
+        .button-container {
+    display: flex;
+    flex-direction: column; /* 按钮垂直排列 */
+    align-items: center; /* 水平居中 */
+    margin-top: 20px; /* 添加一些间距 */
+}
+#customModeContainer {
+    font-size: 32px; /* 修改整体默认文字大小 */
+}
+
+textarea#customTextInput {
+    font-size: 32px; /* 修改文本输入框的文字大小 */
+}
+
+button.option-btn {
+    font-size: 32px; /* 修改按钮的文字大小 */
+}
+
+div.text-group {
+    font-size: 32px; /* 修改结果显示框的文字大小 */
+}
+
+div.timer {
+    font-size: 32px; /* 修改倒计时文字大小 */
+    text-shadow:
+        2px 2px 0 white,    /* 右下阴影 */
+        -2px -2px 0 white,  /* 左上阴影 */
+        2px -2px 0 white,   /* 右上阴影 */
+        -2px 2px 0 white;   /* 左下阴影 */
+}
+
+.link-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0.6); /* 最后一位 0.5 表示 50% 透明度 */
+ 
+}
+
+.text-align{
+	font-size: 32px;
+	
+}
+
+.link-item {
+    font-size: 32px; /* 放大链接字体 */
+    color: #ff66cc;
+    text-decoration: none;
+    padding: 10px 20px;
+    border: 2px solid #ff66cc;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.link-item:hover {
+    background-color: #ff99dd;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    margin-top: 20px; /* 添加顶部间距 */
+}
+
+
+#liquid-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* 确保粒子动画在页面内容下方 */
+}
+
+/* 底部滚动字幕的容器样式 */
+.scrolling-text-bottom {
+    width: 100%; /* 容器宽度 */
+    overflow: hidden; /* 隐藏超出部分 */
+    position: fixed; /* 固定在页面底部 */
+    bottom: 0; /* 距离页面底部的距离 */
+    background-color: rgba(0, 0, 0, 0.7); /* 背景颜色（半透明） */
+    color: white; /* 文字颜色 */
+    padding: 10px 0; /* 上下内边距 */
+    text-align: center; /* 文字居中 */
+    z-index: 1000; /* 确保在页面最上层 */
+}
+
+/* 底部滚动内容的样式 */
+.text-content-bottom {
+    display: inline-block; /* 行内块元素 */
+    white-space: nowrap; /* 防止换行 */
+    padding: 0 20px; /* 左右内边距 */
+    font-size: 18px; /* 字体大小 */
+    animation: scrollTextBottom 15s linear infinite; /* 应用滚动动画 */
+}
+
+/* 定义底部滚动动画 */
+@keyframes scrollTextBottom {
+    0% {
+        transform: translateX(100%); /* 从容器右侧开始 */
+    }
+    100% {
+        transform: translateX(-100%); /* 滚动到容器左侧 */
+    }
+}
+
+/* 添加白色描边效果的通用样式 */
+.text-stroke {
+    text-shadow:
+        2px 2px 0 white,    /* 右下阴影 */
+        -2px -2px 0 white,  /* 左上阴影 */
+        2px -2px 0 white,   /* 右上阴影 */
+        -2px 2px 0 white;   /* 左下阴影 */
+}
+
+
+.feedback-button-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.feedback-button {
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #ff66cc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.feedback-button:hover {
+    background-color: #ff99dd;
+}
+
+#feedbackFormContainer {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#feedbackForm input, #feedbackForm textarea {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#randomTextContainer {
+    text-align: center;
+    font-size: 40px; /* 字体大小 */
+    color: rgba(0, 0, 0, 0.05);/* 字体颜色 */
+    text-shadow: 
+        2px 2px 0 rgba(255, 0, 170, 0.25), /* 右下描边 */
+        -2px -2px 0 rgba(255, 0, 170, 0.25),/* 左上描边 */
+        2px -2px 0 rgba(255, 0, 170, 0.25),/* 右上描边 */
+        -2px 2px 0 rgba(255, 0, 170, 0.25); /* 左下描边 */
+    position: absolute; /* 绝对定位 */
+    display: none; /* 默认隐藏 */
+    top: 50%; /* 垂直居中 */
+    left: 50%; /* 水平居中 */
+    transform: translate(-50%, -75px); /* 偏移25px到上方 */
+    z-index: 100; /* 确保文本在图片上方 */
+}
+/* 闪烁效果的动画 */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+/* 渐变颜色的动画 */
+@keyframes gradient {
+    0%, { color: #000000; }
+    25% { color: #ffd300; }
+    50% { color: #ffb6c1; }
+    75% { color: #ff0000; }
+    100% { color: #ffffff; }
+}
+
+#randomTextContainer {
+    text-align: center;
+    font-size: 50px;
+    color: black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    animation: blink 8s infinite, gradient 4s infinite; /* 同时应用闪烁和渐变动画 */
+}
+
+
+
+        
+    </style>
+</head>
+<body>
+	<div id="fullscreen-background" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;">
+    <img src="https://moe.jitsu.top/img/?sort=r18" alt="Background Image" style="width: 100%; height: 100%; object-fit: cover;">
+</div>
+
+	
+	<canvas id="liquid-canvas"></canvas>
+
+	<div class="scrolling-text">
+    <div class="text-content">榨取你的精液♥榨取精液♥榨取你的精液♥榨取精液♥榨取你的精液♥榨取精液♥榨取你的精液♥榨取精液♥榨取你的精液♥榨取精液♥</div>
+</div>
+
+    <div class="question-container" id="questionContainer">
+        <h1 class="text-stroke">❤️交互式榨精页面❤️</h1>
+        <br>
+        <h2 class="text-stroke">❤️~榨取你的精液~❤️</h2>
+        <h3 class="text-stroke">请检查你当前所处<b>场景</b>确保不会被打扰</h3>
+        <h3 class="text-stroke">请准备好润滑剂、纸巾等辅助和清洁物品</h3>
+        <h3 class="text-stroke">确保你有稳定的网络或提前下载的色情内容</h3>
+        <h3 class="text-stroke">道具榨精请准备好电量充足的“自慰杯”道具</h3>
+        <br>
+        <h3 class="text-stroke">游戏过程出现任何<strong>意外</strong>情况请及时治疗</h3>
+        <h3 class="text-stroke">推荐开启VPN并使用浏览器打开此页面文件 </h3>
+    </div>
+ 
+    <div class="options" id="options">
+        <button class="option-btn" onclick="showResult(1)">手动榨精</button>
+        <button class="option-btn" onclick="showResult(2)">道具榨精</button>
+        <button class="option-btn" onclick="showCustomMode()">自定文本</button>
+        <button class="option-btn" onclick="toggleLinkPage()">色情链接</button>
+        
+
+    </div>
+    
+    <div id="customModeContainer" style="display: none; text-align: center; margin-top: 20px;">
+    <h2 class="text-stroke">自定义模式</h2>
+    <p class="text-stroke" style="font-size: 20px; color: #666; margin-bottom: 10px;">
+        输入格式示例：<br>
+        条件1, 条件2, 条件3 <br>
+        动作1, 动作2, 动作3 <br>
+        每行用逗号（，）分隔多个选项，系统会随机选择每行中的一个选项。
+    </p>
+    <textarea id="customTextInput" placeholder="请输入自定义文本，每行一个动作，用逗号（,）分隔多个选项" rows="5" cols="50"></textarea><br>
+    <button class="option-btn" onclick="generateCustomResult()">生成文本</button>
+    <button class="option-btn" onclick="toggleCustomTimer()" id="toggleTimerButton">启/禁用倒计时</button>
+    <button class="option-btn" onclick="resetInterface()">返回首页</button> <!-- 添加返回按钮 -->
+    <div class="text-group" id="customResultContainer" style="margin-top: 20px;">
+        <p id="customResultText"></p>
+    </div>
+    <div class="timer" id="customTimer" style="margin-top: 10px; font-size: 20px; color: #ff0000;"></div>
+</div>
+
+<!-- 链接页面内容 -->
+<div class="link-container" id="linkContainer" style="display: none;">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h1 class="text-stroke">色情网站列表</h1>
+        <h2 class="text-stroke">点击按钮跳转更多色情网站</h2>
+        <h2 class="text-stroke">网站无法打开可开启VPN重试</h2>
+    </div>
+    <div class="link-list">
+        <a href="https://theporndude.com/zh" target="_blank" class="link-item">THE PORN DUDE </a>
+        <h2 class="text-stroke">色情网页目录网站</h2>
+        <a href="https://www.pornhub.com" target="_blank" class="link-item">Porn Hub</a>
+        <h2 class="text-stroke">成人内容分享网站</h2>
+        <a href="https://hypnotube.com/index.php" target="_blank" class="link-item">Hypnotube</a>
+        <h2 class="text-stroke">催眠题材网站</h2>
+        <a href="https://www.ixxx.com/zh/" target="_blank" class="link-item">IXXX</a>
+        <h2 class="text-stroke">色情内容聚合器</h2>
+        <a href="https://nhentai.net/" target="_blank" class="link-item">Nhentai</a>
+        <h2 class="text-stroke">日式漫画网站</h2>
+        <a href="https://rule34.xxx/" target="_blank" class="link-item">Rule 34</a>
+        <h2 class="text-stroke">任何事物都有它色情的一面</h2>
+        <!-- 随机跳转文本链接 -->
+        <h2 class="text-stroke">超百个随机的色情网站</h2>
+        <a href="javascript:void(0);" class="link-item" onclick="randomRedirect()">随机跳转某个色情网站</a>        
+    </div>
+    
+    <div class="button-container"> <!-- 将按钮包裹在新的容器中 -->
+        <button class="option-btn" onclick="toggleLinkPage()" style="margin-top: 20px;">返回首页</button>
+    </div>
+    
+    </div>
+
+   
+</div>
+
+
+<div class="result-container" id="resultContainer">
+	
+	<!-- 新增文字显示容器 -->
+<div id="randomTextContainer" style="text-align: center; font-size: 50px; color: black; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none;"></div>
+<!-- 新增控制文字显示的按钮 -->
+	<h1 class="text-stroke">随机展示淫乱文本</h1>
+	<h2 class="text-stroke">随机在图片上展示预设的淫乱文本</h2>
+	<h2 class="text-stroke">打开文件，查找const presetTexts = ["修改此处"，"替换文本"]
+</h2>
+<button class="option-btn" id="toggleTextButton">随机淫语</button>
+
+
+    <div class="flex-container">
+        <img src="https://moe.jitsu.top/img/?sort=r18" alt="" id="randomImage">
+    </div>
+    
+    <div class="text-group">
+        <p id="resultText1"></p>
+    </div>
+    <div class="text-group">
+        <p id="resultText2"></p>
+    </div>
+    
+    <div class="timer" id="timer">倒计时：0 秒</div>
+    <div class="timer" id="ejaculateTimer" style="display: none;">射精计时：0 秒</div>
+    
+    <div class="button-container"> 
+<!-- 新增容器 -->
+        <button class="option-btn" id="ejaculateButton" onclick="ejaculate()">我要射精</button>
+        <button class="restart-btn" onclick="resetInterface()">返回首页</button>
+    </div>
+    
+        <h1 class="text-stroke">匀速的：保持用户习惯的默认速度</h3>
+    <h2 class="text-stroke">图片未加载/加载慢请检查网络或调整VPN</h4>
+</div>
+
+<script>
+    // 粒子动画的初始化函数
+    function initParticles() {
+        const canvas = document.getElementById('liquid-canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // 粒子类
+        class Particle {
+            constructor(x, y, speedY) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 100 + 20; // 粒子大小
+                this.speedY = speedY; // 向上喷射的速度
+                this.speedX = Math.random() * 4 - 2; // 水平随机速度
+                this.gravity = 0.025; // 重力加速度
+            }
+
+            draw() {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // 液体颜色
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            update() {
+                this.speedY += this.gravity; // 应用重力
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // 如果粒子超出屏幕，重置到屏幕底部
+                if (this.y > canvas.height) {
+                    this.y = canvas.height;
+                    this.speedY = -Math.random() * 6 - 3; // 重新向上喷射
+                }
+            }
+        }
+
+        // 创建粒子数组
+        const particles = [];
+        const numParticles = 50; // 粒子数量
+        const centerX = canvas.width / 2; // 喷射中心位置
+
+        for (let i = 0; i < numParticles; i++) {
+            particles.push(new Particle(centerX, canvas.height, -Math.random() * 6 - 3));
+        }
+
+        // 动画循环
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // 清除画布
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        animate(); // 启动动画
+    }
+
+    // 页面加载时初始化粒子动画
+    window.addEventListener('load', initParticles);
+
+    // 定义四组随机文本
+    const group1 = [
+        "停止的", "缓慢的", "匀速的", "快速的", "最快速度的", "从快到慢的", "从慢到快的",
+    ];
+
+    const group2 = [
+        "手掌握住阴茎撸动", "手指轻揉阴囊",  "手掌轻拍阴囊", "手掌揉捏阴囊", "食指中指夹住阴茎体撸动", "单指沿阴茎体腹侧滑动", "拇指食指呈环状夹住阴茎体撸动", "手掌包裹龟头并用掌心摩擦", "手指夹住阴茎体来回旋转", "指尖夹住龟头撸动", "手掌反复紧握挤压阴茎体", "手指反复从阴茎根撸到龟头", "指尖摩擦马眼和龟头顶端", "双手夹住阴茎搓弄"
+    ];
+
+    const group3 = [
+        "停止的", "缓慢的", "匀速的", "快速的", "最快速度的", "从快到慢的", "从慢到快的",
+    ];
+
+    const group4 = [
+        "使用自慰杯上下撸动", "使用自慰杯左右旋转", "使用自慰杯只上下撸动龟头到阴茎颈区域", "使用自慰杯反复从阴茎根撸到阴茎颈", "(负压模式)上下撸动自慰杯", "(负压模式)左右旋转自慰杯", "(负压模式)仅插入自慰杯", "(振动模式)上下撸动自慰杯", "(振动模式)左右旋转自慰杯", "(振动模式)仅插入自慰杯"
+    ];
+
+    // 新增变量
+    let timerInterval; // 用于控制正向计时器
+    let elapsedTime = 0; // 用于记录已过去的时间
+    let countdown; // 用于倒计时
+    let imageInterval; // 用于图片轮播
+    let currentGroups; // 当前使用的文本组
+
+    // 随机选择文本
+    function getRandomText(group) {
+        return group[Math.floor(Math.random() * group.length)];
+    }
+
+    // 随机生成时间
+    function getRandomTime() {
+        return Math.floor(Math.random() * (60 - 5 + 1)) + 5;
+    }
+
+    // 更新倒计时
+    function updateTimer(seconds, timerElement, resultText1, resultText2) {
+        if (seconds > 0) {
+            timerElement.textContent = `倒计时：${seconds} 秒`;
+            countdown = setTimeout(() => updateTimer(seconds - 1, timerElement, resultText1, resultText2), 1000);
+        } else {
+            // 倒计时结束后重新生成随机文本
+            const newText1 = getRandomText(currentGroups[0]);
+            const newText2 = getRandomText(currentGroups[1]);
+            resultText1.textContent = newText1;
+            resultText2.textContent = newText2;
+
+            // 重新启动倒计时
+            const newTime = getRandomTime();
+            timerElement.textContent = `倒计时：${newTime} 秒`;
+            updateTimer(newTime, timerElement, resultText1, resultText2);
+        }
+    }
+
+    // 启动正向计时器
+    function startTimer() {
+        elapsedTime = 0; // 重置时间
+        timerInterval = setInterval(() => {
+            elapsedTime += 1; // 每秒加1
+            document.getElementById('ejaculateTimer').textContent = `射精计时：${elapsedTime} 秒`; // 更新射精计时器显示
+            document.getElementById('ejaculateTimer').style.display = 'block'; // 确保计时器可见
+        }, 1000);
+    }
+
+    // 射精按钮的逻辑
+    function ejaculate() {
+        clearInterval(timerInterval); // 停止正向计时器
+        clearTimeout(countdown); // 停止倒计时计时器
+        timerInterval = null; // 清空正向计时器引用
+        countdown = null; // 清空倒计时计时器引用
+
+        const timerElement = document.getElementById('ejaculateTimer');
+        timerElement.textContent = `精液榨取结束，总时间：${elapsedTime} 秒`; // 显示总时间
+
+        // 显示预设文本
+        const resultText1 = document.getElementById('resultText1');
+        const resultText2 = document.getElementById('resultText2');
+        resultText1.textContent = "感谢你榨取自己的精液~！";
+        resultText2.textContent = "请记得保持卫生，注意休息哦！";
+
+        // 隐藏“射精”按钮
+        document.getElementById('ejaculateButton').style.display = 'none';
+    }
+
+    // 显示结果
+    function showResult(option) {
+        document.getElementById('questionContainer').style.display = 'none';
+        document.getElementById('options').style.display = 'none';
+        document.getElementById('resultContainer').style.display = 'block';
+        
+        // 隐藏全屏背景图片
+    document.getElementById('fullscreen-background').style.display = 'none';
+
+
+        switch(option) {
+            case 1:
+                currentGroups = [group1, group2];
+                break;
+            case 2:
+                currentGroups = [group3, group4];
+                break;
+        }
+
+        const initialText1 = getRandomText(currentGroups[0]);
+        const initialText2 = getRandomText(currentGroups[1]);
+        const resultText1 = document.getElementById('resultText1');
+        const resultText2 = document.getElementById('resultText2');
+        resultText1.textContent = initialText1;
+        resultText2.textContent = initialText2;
+
+        const imageElement = document.getElementById('randomImage');
+        imageElement.src = `https://moe.jitsu.top/img/?sort=r18&timestamp=${new Date().getTime()}`;
+        imageInterval = setInterval(() => {
+            imageElement.src = `https://moe.jitsu.top/img/?sort=r18&timestamp=${new Date().getTime()}`;
+        }, 2500);
+
+        const initialTime = getRandomTime();
+        const timerElement = document.getElementById('timer');
+        timerElement.textContent = `倒计时：${initialTime} 秒`;
+        updateTimer(initialTime, timerElement, resultText1, resultText2);
+
+        startTimer(); // 启动正向计时器
+    }
+
+    // 显示自定义模式
+    function showCustomMode() {
+        document.getElementById('questionContainer').style.display = 'none';
+        document.getElementById('options').style.display = 'none';
+        document.getElementById('customModeContainer').style.display = 'block';
+    }
+
+    // 生成自定义随机文本
+    function generateCustomResult() {
+        const userInput = document.getElementById('customTextInput').value;
+        const lines = userInput.split('\n').filter(line => line.trim() !== '');
+
+        if (lines.length        === 0) {
+            alert('请输入至少一个自定义榨精动作！');
+            return;
+        }
+
+        const results = lines.map(line => {
+            const options = line.split('，').map(option => option.trim());
+            return options[Math.floor(Math.random() * options.length)];
+        });
+
+        document.getElementById('customResultText').textContent = results.join('\n');
+    }
+
+    // 切换自定义倒计时
+    function toggleCustomTimer() {
+        const button = document.getElementById('toggleTimerButton');
+        const timerElement = document.getElementById('customTimer');
+        const resultText = document.getElementById('customResultText');
+        if (countdown) {
+            // 停止倒计时
+            clearTimeout(countdown);
+            clearInterval(imageInterval);
+            countdown = null;
+            button.textContent = '启动倒计时';
+            timerElement.textContent = ''; // 清空倒计时显示
+        } else {
+            // 启动倒计时
+            generateCustomResult(); // 生成初始自定义文本
+            const initialTime = getRandomTime();
+            updateTimer(initialTime, timerElement, resultText, resultText); // 注意这里传入的是同一个文本元素
+            button.textContent = '取消倒计时';
+        }
+    }
+    
+// 切换链接页面显示
+function toggleLinkPage() {
+    const linkContainer = document.getElementById('linkContainer');
+    const questionContainer = document.getElementById('questionContainer');
+    const optionsContainer = document.getElementById('options');
+
+    if (linkContainer.style.display === 'none') {
+        // 显示链接页面，隐藏其他内容
+        linkContainer.style.display = 'block';
+        questionContainer.style.display = 'none';
+        optionsContainer.style.display = 'none';
+    } else {
+        // 返回首页
+        linkContainer.style.display = 'none';
+        questionContainer.style.display = 'block';
+        optionsContainer.style.display = 'block';
+    }
+}
+
+function toggleFeedbackForm() {
+    const feedbackFormContainer = document.getElementById('feedbackFormContainer');
+    const questionContainer = document.getElementById('questionContainer');
+
+    // 只在首页显示反馈表单
+   if (questionContainer.style.display !== 'none') {
+        if (feedbackFormContainer.style.display === 'none') {
+            feedbackFormContainer.style.display = 'block';
+        } else {
+            feedbackFormContainer.style.display = 'none';
+        }
+    }
+}
+// 切换反馈表单显示
+function toggleFeedbackForm() {
+    const feedbackFormContainer = document.getElementById('feedbackFormContainer');
+    feedbackFormContainer.style.display = feedbackFormContainer.style.display === 'flex' ? 'none' : 'flex';
+}
+
+
+// 发送反馈邮件
+function sendFeedback() {
+    const name = document.getElementById('feedbackName').value;
+    const email = document.getElementById('feedbackEmail').value;
+    const message = document.getElementById('feedbackMessage').value;
+
+    if (message.trim() === '') {
+        alert('请输入你想要反馈的内容！');
+        return;
+    }
+
+    // 预设的邮箱地址
+    const recipientEmail = 'liliskatesex@gmail.com'; // 替换为你的邮箱地址
+
+    // 构造邮件内容
+    const mailtoLink = `mailto:${recipientEmail}?subject=用户反馈&body=如何称呼对方：${name}%0A对方的联系方式：${email}%0A对方向你发送了以下内容：%0A${message}`;
+
+    // 打开默认邮件客户端
+    window.location.href = mailtoLink;
+
+    // 隐藏表单
+    toggleFeedbackForm();
+}
+
+    // 重置界面
+    function resetInterface() {
+        document.getElementById('resultContainer').style.display = 'none';
+        document.getElementById('customModeContainer').style.display = 'none';
+        document.getElementById('questionContainer').style.display = 'block';
+        document.getElementById('options').style.display = 'block';
+
+        clearTimeout(countdown);
+        clearInterval(imageInterval);
+        clearInterval(timerInterval); // 清除正向计时器
+
+        document.getElementById('customTextInput').value = '';
+        document.getElementById('customResultText').textContent = '';
+        document.getElementById('customTimer').textContent = ''; // 清空倒计时显示
+        document.getElementById('timer').textContent = '倒计时：0 秒'; // 重置倒计时显示
+        document.getElementById('ejaculateTimer').textContent = '射精计时：0 秒'; // 重置射精计时器显示
+        document.getElementById('ejaculateTimer').style.display = 'none'; // 隐藏射精计时器
+        document.getElementById('ejaculateButton').style.display = 'block'; // 显示“射精”按钮
+        
+        // 显示全屏背景图片
+    document.getElementById('fullscreen-background').style.display = 'block';
+
+
+        // 重新初始化粒子动画
+        initParticles();
+    }
+    
+    // 预设的文字数组
+const presetTexts = [
+"小处男的第一次，就该献给人家的骚穴～","这根废物鸡巴，也只配射在地板上呢～", 
+"这么容易就硬了，真是个欠操的贱货呢～", "看看你这可怜的持久度，连十分钟都撑不住吧？", 
+"射出来了吗？才两下就不行了呢～", "这么小的肉棒，怎么满足人家啊～",
+"被人家玩弄的感觉如何？是不是很爽？", "这就是你的极限了吗？真是个早泄男呢～", 
+"乖乖把精液交出来，人家就让你多插一会～", "被人家玩得这么舒服，以后每天都要来报到哦～", 
+"这么想被羞辱吗？那就跪下来求我～", "骚母狗的鸡巴，就该被这样对待呢～",
+"射得太快了吧？要不要人家教你怎么忍住？", "被骂得更兴奋了对不对？真是个变态呢～", 
+"乖乖当人家的玩具，把所有精液都贡献出来～", "这么快就想射？果然是天生的奴隶命～", 
+"看着自己的精液流出来，很有感觉吧？", "你就是人家最棒的性奴，永远属于我哦～",
+"被这样对待还能硬成这样，真是个抖M呢～", "射完了吗？这才刚开始哦，继续服侍人家～", 
+"含着人家的丝袜自慰，真是个变态呢～", "被人家踩着还这么兴奋，真是无可救药～", 
+"这根可怜的小肉棒，只能靠幻想活着呢～", "明明已经射空了还在发抖，真是贪心呢～", 
+"被人家这样支配，才是你应该有的样子～", "每天晚上都偷偷想着人家自慰对吧？", 
+"被人家玩坏的滋味如何？是不是欲仙欲死？", "贱狗，你就是个永远只能意淫的废物～", 
+"被人家羞辱就这么兴奋吗？真可悲呢～", "这么小的鸡巴，连让人家高潮都做不到吧？", 
+"看你现在这幅发情的模样，活脱脱一条发情的公狗～", "你的精液都是属于人家的，一滴都不许浪费知道吗？", 
+"像你这样的垃圾，只配被人家当成厕所使用呢～", "被人家这样践踏还这么享受，真是个天生的受虐狂～", 
+"贱狗东西，看你这样子就知道想被人家玩弄了吧？赶紧把你那根废物鸡巴掏出来给人家看看。", "就你这幅德行，连给人家舔脚趾都不配，不过既然你这么想要，那就乖乖听话，让人家好好调教你这处男。", "瞧你那点出息，裤子都被顶起来了，是不是闻到人家的味道就想射啊？真他妈骚。", "小骚货，看你站都站不稳了，是不是已经被人家的大奶子迷得神魂颠倒了？",
+"就知道盯着人家的奶子和屁股看，你那点精液可别浪费在裤子里，留着送给人家。", "瞧你那点出息，光看着人家就要射了？要不要人家教教你怎么当个合格的性奴？",
+"看你这一脸欲求不满的样子，是不是天天晚上都在想着人家撸你那废物鸡巴？", "贱狗，看你口水都要流下来了，是不是想把人家按在地上狠狠地干啊？做梦去吧！",
+"看你这样子就知道是个废物，不过没关系，人家最喜欢玩你这样的处男了，等着被我榨干吧。", "小畜生，光闻到人家身上的味道就开始流水了？真他妈骚，今天非得好好教训教训你。",
+"贱狗，看你那点出息，光是看到人家就想射了？今天非得把你榨得一滴不剩。", "瞧你这幅德行就知道是条发情的公狗，今天就让人家好好教训教训你这条公狗。",
+"你这样的废物人家见多了，除了意淫还会什么？", "怎么？这就硬了？人家还没开始呢，等会儿有你爽的时候，现在先给人家跪好了！", "亲爱的，求你用这根鸡巴狠狠地操死这头淫荡的母猪吧！我愿意做你的私人飞机杯，随时随地供你发泄！",
+"主人，请用你的大肉棒把这个下贱的骚逼操烂！这对母狗奶子也是你的，请尽情地玩弄吧！", "小弟弟，请用你的鸡巴惩罚这头不知羞耻的母猪！把我操到只会喊主人为止！",
+"求求你用这根完美的鸡巴干死人家这头发情的母猪！", "让人家的骚逼和奶子都被你的精液浇灌吧！",
+"人家会用尽一切办法榨干你的每一滴精液！", "请把人家当成你的永久性玩具来使用吧！",
+"求求你把精液全部射进母猪的子宫里！", "只要你肯操我，我就用这对贱奶子帮你打奶炮，让你爽上天！",
+"主人，母猪可以用这张贪吃的骚嘴伺候您的大鸡巴，保证让您欲仙欲死！", "快点插进来吧，这对大奶子已经饥渴难耐了，想被主人的大肉棒狠狠干！",
+"快用你的大鸡巴狠狠地教训我这个不知廉耻的骚货，把我操到失禁为止！", "求求你用大肉棒贯穿我的子宫，让我怀上你的种，做你永远的母狗！",
+"亲爱的，你那里的反应比人家想象的还要热情呢...","人家最喜欢看你为我兴奋的样子了。", "想不想尝尝的滋味？一定比你想象的还要美味哦。","乖乖听话就有奖励，人家会好好疼爱你的。",
+"你的每一次颤抖都让人家很开心呢。","让人家看看你能坚持多久？","只要你听话，人家什么都依你。","你的味道让人家上瘾，每天都想要更多。",
+"人家会让你爽到忘记所有烦恼。","你的热情让人家感到骄傲。","人家会教你很多有趣的事情哦。","只要是你想要的，人家都会满足你。",
+"傻逼的废物鸡巴只配当按摩棒","快看你这窝囊废的小鸡巴，还不如我的肛塞大","就你这短小的烂东西还敢叫男人？","你的卵蛋连精液都装不满，活该一辈子撸管",
+"你那两厘米的东西也能叫鸡巴？笑死人了","废物就该一辈子舔人家的脚趾","被我骂得这么爽，鸡巴是不是已经在流水了？","废物除了当奴才还能干什么？乖乖给人家当尿壶吧",
+"听说你射一次就萎了？果然是个废物","就你这样的还想满足女人？做梦去吧","傻逼除了早泄还会什么？赶紧跪下磕头认错","被我说得这么爽，是不是又要提前射精了？",
+"你这种废物就该天天被人骂到射精","瞧瞧你那点出息，一碰就泄，丢不丢人","你这短小的东西只配给人家擦鞋底","操你妈的死废物，你那两厘米的虫子也配叫鸡巴？",
+"你妈的骚儿子，被我骂得这么爽是不是又要射了？","你这种废物连狗都不如，狗鸡巴都比你大！","看看你这副德性，是不是又要提前早泄了？废物！","操你妈的骚母狗，你的鸡巴还不如我的跳蛋大！",
+"废物东西，看你那副德性，一听烂逼就忍不住想打飞机了吧？","你这种烂货，天天躲在家里偷偷对着妓女烂逼自慰是吧？","瞧你那点出息，一说到野爹的鸡巴就忍不住要射了？真恶心！","你这种早泄废物，听我骂你就能射出来了吧？真他妈贱！",
+"你那根短小的虫子现在是不是又在流水了？","废物东西，你的鸡巴是不是又硬了？操你妈的贱货！","看看你这副德性，一羞辱就想打飞机，活该一辈子打光棍！","你这种早泄王八蛋，是不是又要对着人家的照片自慰了？",
+"瞧瞧你这副德性，被骂得这么爽又要提前射了？真他妈废物！","废物东西，你的精液就跟你的鸡巴一样稀薄无力！","听好了，你这种废物只配对着操烂的骚屄意淫自慰！","贱狗，你的卵蛋是不是又在发痒了？赶紧打飞机吧！",
+"废物东西，是不是又要对着人家自慰了？操你妈的！","瞧你那点出息，一提到交配就想射精，真他妈恶心！","你这种垃圾，除了打飞机还会干什么？废物东西！","你那两厘米的虫子现在是不是又硬了？真贱！","瞧你那副德性，被骂得这么爽是不是又要早泄了？",
+"废物东西，你的鸡巴现在是不是又湿又软？真他妈恶心！","贱狗，你的精液都稀得跟水一样，活该一辈子打飞机！","操你妈的废物，你的人生就是在打飞机中度过的吧？","贱货，想不想被人家玩到失禁？保证让你爽到欲仙欲死。",
+"欠操的废物，听着辱骂就会流水的小公狗","两厘米的小豆芽也想学别人打炮？真是不知天高地厚","这种可怜的大小，连女人的处女膜都碰不到吧？","早泄的小公猪，光是听听羞辱就要射出来了？","你这种废物鸡鸡这辈子都别想插入女人的阴道",
+"两厘米的小豆芽只能用来幻想和自慰","没用的废物连给大鸡巴暖床都不配","可怜的小豆芽就算撸出血也不会变大","早泄废物连打飞机的资格都没有",
+"没用的包皮男，连清理自己都做不到","软弱的小弟弟遇到女人就发抖","短小的鸡鸡连前列腺高潮都享受不到","废物鸡鸡存在的唯一意义就是被羞辱和贬低",
+"两厘米的废物鸡鸡就该天天被羞辱到射精","早泄废物，听着辱骂就要流水了吧","没用的鸡鸡连勃起都要靠意淫","废物小弟弟，连前列腺高潮都享受不到",
+"短小的鸡鸡，连前戏都还没好就射了呢","可怜的小豆芽，随便一碰就软了","撸出血也硬不起来的废物","没用的包茎男，连龟头都看不到",
+"软弱的性器，连女人的滋味都不知道","连打飞机都做不好的失败者","早泄废物，被骂一句就要喷精","没用的鸡鸡，连射精都无能的可怜虫",
+"精液稀薄如水，连授精都做不到的废物","短小的鸡鸡连插进洞口都不配","废物小弟弟，撸断了也不会变大","早泄废物，轻轻一碰就投降",
+"想被操烂的骚屄，求我干你啊","发情期的母狗就该被大鸡巴狠狠教训","淫荡的贱货，连狗鸡巴都比你大","烂掉的骚屄早就等着被人干翻",
+"发骚的公狗，光是被骂就要射了吧","欠干的母狗，脱裤子就流水是吧","不知廉耻的贱货，连屁眼都在发情","骚浪的母狗，被操松的屁眼还在渴求插入",
+"饥渴难耐的小骚货，闻到大鸡巴的味道就受不了了吧？","骚浪的小母狗，光是想象被插入的场景就要高潮了？","淫荡的小穴流出的淫水都把沙发打湿了呢","寂寞难耐的骚屄渴望被大鸡巴狠狠贯穿",
+"敏感的身体轻轻一碰就会颤抖不止","湿润的骚屄渴望得到粗暴的对待","发情的雌兽需要被雄性的力量征服","空虚的骚屄期待被炙热的精液填满",
+"主人～人家的骚穴好痒，想吃掉大肉棒呢...","宝贝～你摸摸我的后面，是不是已经很湿了？嗯啊～想要大鸡巴狠狠插进来...","请用力操我吧...把我的小骚逼操烂...让我变成你的专属肉便器...","小母狗的骚穴好空虚啊...想被爸爸的大肉棒填满...求你了～快把我干死吧...",
+"主人～求你用精液喂饱我这个骚货吧！","啊～人家就是个欠操的骚母狗，请狠狠地惩罚我吧！","想要主人的大鸡巴狠狠地贯穿我的小穴，把我操到失禁为止～","请把你的精液全部射在我脸上，我要做你的专属精液垃圾桶～",
+"小处男的鸡巴真可爱呢，又粉又嫩，一看就没碰过女人吧？让姐姐教你什么是真正的快乐～","看你这幅没见过世面的样子，是不是光听着姐姐的声音就已经硬得不行了？真是个变态呢～","这么小的鸡巴，还不如姐姐的按摩棒呢。要不要尝尝姐姐的味道？保证让你爽到升天哦♥","听到了吗，小虫子？这些都是特意为你准备的'助兴良药'哦。要是受不了的话，随时都可以射出来哦～不过可别太快投降了，那样一点都不好玩呢～",
+"小处男的第一次给了谁呀？难道是自己打飞机吗？真可怜～","哎呀，你的小弟弟颤抖得好厉害哦，是不是想射了？快点求姐姐让你射好不好～","这根小肉棒看起来好美味，像颗QQ糖一样，人家好想含在嘴里吸一吸呢～","看到了吗？姐姐的小穴已经湿透了呢，都是因为你这个小色鬼一直盯着看～",
+"听说处男特别敏感，姐姐的这个震动频率怎么样？要不要试试看能不能让你马上缴械投降～","你看姐姐的内裤都湿了一大片呢，都是想着你这个小处男流出来的，你说羞不羞～","这对奶子够不够软？要不要尝尝姐姐的乳头？保证比你自己想象的还要舒服哦～","人家下面好痒啊，你的小弟弟再不快点进来，姐姐就要去找别人止痒了哦～",
+"小处男最喜欢什么样的姿势？要不要姐姐躺下来让你自己选择？保证配合得很好～","看你这样子，平时肯定没什么机会接触女人吧？今天阿姨就让你好好体验一下成熟女人的滋味～","小弟弟，姐姐这里有个特别温暖的地方，你要不要进来暖和暖和？保证比你一个人偷偷打飞机爽多了～","学长～人家第一次，你可要温柔点哦。不过如果你忍不住的话，也可以用力一点的～","呵呵，原来是个只配舔姐姐鞋底的下贱玩意儿～你这种垃圾也配碰女人的身体？","瞧瞧这张发情的母狗脸，是不是光是闻到姐姐们的味道就快要把持不住了？真是条没用的公狗～","贱货就该跪在地上给人当垫脚石，你说对不对啊？让姐姐踩踩你这根可怜的小牙签～","哟～这就开始流水了？果然是个天生的受虐狂，被人羞辱都能这么兴奋，真是恶心死了～",
+"知道为什么派你来当我的下属吗？因为你这种人最适合当个厕所，供姐姐们发泄压力～","不听话的小狗就该挨打，让我好好教教你该怎么讨好主人们～","既然这么欠调教，那就给你戴上这个，从此以后你就是姐姐们的私人奴隶了～","看看姐姐的纹身，'男奴专用'，这是专门为你这样的下贱胚子准备的哦～",
+"姐姐的逼里还塞着跳蛋呢，都是因为你这种变态才变得这么饥渴的～","想不想尝尝姐姐的味道？先把你这根小虫子含在嘴里漱漱口再说吧～","记住你的位置，你只配做姐姐们的公共厕所，连舔脚趾都不配～",
+];
+
+// 控制文字显示状态的变量
+let isTextVisible = false;
+let textInterval;
+
+
+
+// 显示/隐藏文字的逻辑
+document.getElementById('toggleTextButton').addEventListener('click', () => {
+    const textContainer = document.getElementById('randomTextContainer');
+    const imageElement = document.getElementById('randomImage'); // 获取图片元素
+    const imageRect = imageElement.getBoundingClientRect(); // 获取图片的位置和尺寸信息
+
+    if (!isTextVisible) {
+        // 如果当前文字不可见，开始随机生成文字
+        textContainer.style.display = 'block';
+        textContainer.style.position = 'absolute'; // 设置为绝对定位
+        textContainer.style.left = `${imageRect.left + imageRect.width / 2}px`; // 设置水平居中
+        textContainer.style.top = `${imageRect.top + imageRect.height / 2}px`; // 设置垂直居中
+        textContainer.style.transform = 'translate(-50%, -50%)'; // 精确居中调整
+        textInterval = setInterval(() => {
+            const randomText = presetTexts[Math.floor(Math.random() * presetTexts.length)];
+            textContainer.textContent = randomText;
+        }, Math.floor(Math.random() * 4000) + 4000); // 随机3-5秒生成一次文字
+        isTextVisible = true;
+        document.getElementById('toggleTextButton').textContent = '隐藏文本';
+    } else {
+        // 如果当前文字可见，停止生成文字并隐藏
+        clearInterval(textInterval);
+        textContainer.style.display = 'none';
+        isTextVisible = false;
+        document.getElementById('toggleTextButton').textContent = '显示内容';
+    }
+});
+
+
+// 随机生成文本位置
+            const randomTop = Math.random() * (imageRect.height - 50); // 避免超出图片高度
+            const randomLeft = Math.random() * (imageRect.width - 100); // 避免超出图片宽度
+            
+            // 随机跳转功能
+function randomRedirect() {
+    const websites = [
+        "https://theporndude.com/zh","https://www.pornhub.com",
+        "https://hypnotube.com/index.php","https://www.ixxx.com/zh/",
+        "https://nhentai.net/","https://rule34.xxx/",
+        "https://www.xnxx.com/","https://www.eporner.com/",
+        "https://fikfap.com/","https://tik.porn/",
+        "https://netflav.com/","https://sxyprn.com/",
+        "https://tubesafari.com/","https://www.thumbzilla.com/",
+        "https://www.fuq.com/zh/","https://www.tubegalore.com/zh/","https://www.alohatube.com/",
+        "https://fuckmoral.com/zh","https://beeg.com/",
+        "https://spankbang.com/","https://www.porngo.com/",
+        "https://www.redtube.com/","https://www.youporn.com/",
+        "https://pornone.com/","https://www.3movs.com/",
+        "https://www.tube8.com/","https://av.gl/",
+        "https://avtoday.io/index","http://www.h528.com/",
+        "https://asmrpleasure.com/","https://www.redgifs.com/",
+        "https://m.hqporner.com/","https://porcore.com/",
+        "https://sfmcompile.club/","https://www.naughtymachinima.com/",
+        "https://kemono.su/","https://motherless.com/",
+        "https://txxx.com/","https://fullporner.com/",
+        "https://www.trendyporn.com/","https://veporn.com/",
+        "https://m.drtuber.com/","https://letsjerk.tv/",
+        "https://pornobae.com/","https://pornmz.com/",
+        "https://www.xmegadrive.com/","https://www9.pornhd3x.tv/",
+        "https://joysporn.club/","https://xxxfree.watch/",
+        "https://yespornpleasexxx.com/","https://foxnxx.com/",
+        "https://4kporn.xxx/","https://watchporn.to/",
+        "https://latestpornvideo.com/","https://inporn.com/",
+        "https://anyporn.com/","https://kwiky.com/",
+        "https://www.xxxfollow.com/","https://sharesome.com/news/",
+        "https://ogfap.com/","https://my.club/",
+        "https://hanime1.me/","https://www.avrebo.com/zh-CN",
+        "https://waptap.com/feed","https://swipefap.com/",
+        "https://reelsmunkey.com/","https://xxtok.com/x/uxtsdwc6",
+        "https://www.extranaughty.com/home","https://javtrailers.com/shorts/live",
+        "https://www.heavy-r.com/","https://thisvid.com/",
+        "https://heavyfetish.com/","https://femefun.com/",
+        "https://www.tubebdsm.com/zh/","https://bdsmstreak.com/",
+        "https://l.clips4sale.com/search","https://hypnoporn.net/",
+        "https://hcbdsm.com/","https://cosxplay.com/",
+        "https://69story.com/","https://hhhbook.com/",
+        "https://aaanovel.com/","https://xx-book.com/",
+        "https://xbookcn.net/","https://www.caramelbbw.com/en/",
+        "https://www.naughtyblog.org/","https://www.xtits.com/",
+        "https://bigboobsfilm.com/en/","https://titshits.com/en/",
+        "https://spicybigtits.com/en/","https://www.gigantits.com/",
+        "https://www.curvyerotic.com/","https://www.teensnow.com/",
+        "https://www.assoass.com/zh/","https://www.ass4all.com/",
+        "https://www.ashemaletube.com/","https://x-tg.tube/",
+        "https://www.trannytube.tv/","https://trannyvideosxxx.com/",
+        "https://www.shemaletubevideos.com/","https://shemalez.com/",
+        "https://spicytranny.com/en/","https://transfap.to/",
+        "https://transdoe.com/","https://iamsissy.com/",
+        "https://www.xshemale.tv/","https://www.incestflix.com/",
+        "https://milfnut.com/","https://familyporn.tv/",
+        "https://www.tabootube.xxx/","https://www.incestvidz.com/",
+        "https://familypornhd.com/","https://taboodude.com/",
+        "https://milfcaps.com/home/","https://familyporner.com/",
+        "https://slushe.com/","https://cartoonporn.pro/",
+        "https://www.3dsexanime.xyz/","https://www.zzcartoon.com/",
+        "https://xanimu.com/","https://multporn.net/",
+        "https://allporncomic.com/home-3/","https://8muses.io/",
+        "https://ilikecomix.com/en-comics/","https://myhentaigallery.com/",
+        "https://myhentaicomics.com/","https://svscomics.com/",
+        "https://freeadultcomix.com/","https://freeadultcomix.com/",
+        "https://bestporncomix.com/","https://www.erofus.com/",
+        "https://gedecomix.com/main/","https://en.thehentai.net/",
+        "https://www.palcomix.com/supportpal.html","https://hentaixyuri.com/",
+        "https://hentaixcomic.com/","https://hentaixdickgirl.com/",
+        "https://allporncomics.co/","https://18comic.vip/",
+        "https://www.wnacg.com/","https://18h.mm-cg.com/zh/",
+        "https://www.177picyy.com/","https://www.ho5ho.com/",
+        "https://www.ho5ho.com/","https://rokuhentai.com/",
+        "https://www.comicbox.xyz/index.html","https://syacomic.com/",
+        "https://hentaifox.com/","https://www.simply-hentai.com/web1",
+        "https://9hentai.so/#6g","https://hentairox.com/",
+        "https://asmhentai.com/","https://hentaihere.com/",
+        "https://doujins.com/","https://hentalk.pw/",
+        
+
+    ];
+    const randomIndex = Math.floor(Math.random() * websites.length);
+    window.location.href = websites[randomIndex];
+}
+
+
+</script>
+<div class="feedback-button-container" style="text-align: center; margin-top: 20px;">
+    <button class="feedback-button" onclick="toggleFeedbackForm()">反馈与建议</button>
+</div>
+
+    <!-- 反馈表单 -->
+<!-- 反馈表单 -->
+<div id="feedbackFormContainer" style="display: none; text-align: center; margin-top: 20px;">
+    <br>
+    <form id="feedbackForm">
+        <input type="text" id="feedbackName" placeholder="我该如何称呼你（可选）" style="display: block; margin: 10px auto;">
+        <input type="email" id="feedbackEmail" placeholder="提供你的联系方式（可选）" style="display: block; margin: 10px auto;">
+        <textarea id="feedbackMessage" placeholder="请输入你的反馈内容" required style="display: block; margin: 10px auto;"></textarea>
+        <button type="button" onclick="sendFeedback()" style="display: block; margin: 10px auto;">发送反馈</button>
+    </form>
+</div>
+
+<div class="scrolling-text-bottom">
+    <div class="text-content-bottom">肉棒❤️鸡巴❤️肉棒❤️鸡巴❤️肉棒❤️鸡巴❤️肉棒❤️鸡巴❤️肉棒❤️鸡巴❤️肉棒❤️鸡巴❤️肉棒❤️鸡巴❤️肉棒❤️鸡巴❤️</div>
+</div>
+
+</body>
+</html>
